@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import AppForm from "./components/AppForm/AppForm";
+import UsersList from "./components/UsersList/UsersList";
 
 export default function Home() {
   const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState({});
 
   const userNameInput = useRef(null);
   const passwordInput = useRef(null);
   const inputIdValue = useRef(null);
+  const formRefs = { userNameInput, passwordInput };
 
   const call = () => {
     fetch("api/users", {
@@ -33,22 +37,22 @@ export default function Home() {
       psw: passwordValue,
     };
 
-    const res = await fetch("api/users", {
+    await fetch("api/users", {
       method: "POST",
       body: JSON.stringify(newUser),
     });
 
-    const data = await res.json();
-
-    console.log(data);
+    // AZZERO I VALORI
+    userNameInput.current.value = "";
+    passwordInput.current.value = "";
 
     call();
   };
 
-  const selectUser = async () => {
+  const modifyUser = async () => {
     console.log("modifyUser");
 
-    await fetch(`api/users/?id=${inputIdValue.current.value}`, {
+    await fetch(`api/users/?id=${selectedUser._id}`, {
       method: "PATCH",
       body: JSON.stringify({
         userName: userNameInput.current.value,
@@ -56,33 +60,36 @@ export default function Home() {
       }),
     });
 
+    // AZZERO I VALORI
+    userNameInput.current.value = "";
+    passwordInput.current.value = "";
+    setSelectedUser({});
     call();
+  };
+
+  const handleSelectUser = async (id) => {
+    console.log("handleSelectUser", id);
+
+    const res = await fetch(`api/users/${id}`);
+
+    const data = await res.json();
+
+    console.log(data);
+    setSelectedUser(data.user);
+    userNameInput.current.value = data.user.userName;
+    passwordInput.current.value = data.user.password;
   };
 
   return (
     <main>
-      <h1>Fish Page</h1>
-      {users.map((user, idx) => (
-        <p key={idx}>
-          {user.userName} - {user._id}
-        </p>
-      ))}
-
-      <p>Add User:</p>
-      <input ref={userNameInput} type="text" placeholder="name" />
-      <input ref={passwordInput} type="password" placeholder="password" />
-
-      <button onClick={addUser}>Add User</button>
-
-      <div>
-        <input ref={inputIdValue} type="text" placeholder="id" />
-      </div>
-
-      <div>
-        <input ref={userNameInput} type="text" placeholder="name" />
-        <input ref={passwordInput} type="password" placeholder="password" />
-        <button onClick={selectUser}>select</button>
-      </div>
+      <h1>Users Fish Page</h1>
+      <section>
+        <AppForm
+          formRefs={formRefs}
+          handleSubmit={selectedUser._id ? modifyUser : addUser}
+        />
+      </section>
+      <UsersList users={users} handleSelect={handleSelectUser} />
     </main>
   );
 }
