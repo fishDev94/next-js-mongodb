@@ -14,16 +14,14 @@ export async function GET() {
 export async function POST(req) {
   const newUser = await req.json();
 
-  const user = new User({
-    userName: newUser.userName,
-    psw: newUser.psw,
-  });
-
-  user.save();
-
-  console.log(user);
-
   try {
+    const user = new User({
+      userName: newUser.userName,
+      psw: newUser.psw,
+    });
+    user.save();
+
+    console.log(user)
     return NextResponse.json({ message: "Added!" });
   } catch (error) {
     console.log(error);

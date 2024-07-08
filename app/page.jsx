@@ -80,6 +80,19 @@ export default function Home() {
     passwordInput.current.value = data.user.password;
   };
 
+  const deleteUser = async () => {
+    const id = selectedUser._id;
+
+    const res = await fetch(`api/users/${id}`, {
+      method: "DELETE"
+    })
+
+    const data = await res.json();
+
+    console.log(data);
+    call();
+  }
+
   return (
     <main>
       <h1>Users Fish Page</h1>
@@ -89,6 +102,7 @@ export default function Home() {
           handleSubmit={selectedUser._id ? modifyUser : addUser}
         />
       </section>
+      <button onClick={deleteUser}>Delete</button>
       <UsersList users={users} handleSelect={handleSelectUser} />
     </main>
   );
